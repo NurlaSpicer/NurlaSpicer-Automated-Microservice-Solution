@@ -2,20 +2,20 @@ import json
 import requests
 import pandas as pd
 
-# Определяем authorization token
-authorization = 'bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjE3MDk1LCJpc3MiOiJodHRwczovL2xvZ2luLmNybS5hY3NvbHV0aW9ucy5haS9hcGkvdjIvdXNlcnMvYXV0aCIsImlhdCI6MTcxOTIwOTIxMywiZXhwIjoxNzUwNzQ1MjEzLCJuYmYiOjE3MTkyMDkyMTMsImp0aSI6Inl1eEg4WHAxTkJRUVp0dlQifQ.C7K0-bjlNhJqrFDQVoipCAR0CoRksbIhlTJrQRUSfnc'
+# Defining an Authorization Token
+authorization = 'bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjE3MDk1LCJpc3MiOiJodHRwczovL2xvZ2luLmNybS5hY3NvbHV0aW9ucy5haS9hcGkvdj'
 
-# Определяем key BP
+# Defining an unique key BP
 key = 'd5a4eb6636'
 
-# Определяем date_from
+# Defining a date_from
 date_from = '2024-06-19'
 
-# Определяем date_to
+# Defining a date_to
 date_to = '2024-06-24'
 
 
-# Определяем заголовки и параметры для первого запроса
+# Defining the headers and parametrs for the 1st and 2nd requests
 headers1 = {
     'accept': 'application/json, text/plain, */*',
     'authorization': authorization,
@@ -28,7 +28,7 @@ params1 = {
 }
 
 
-# Выполняем первый запрос
+# Excecuding the 1st request
 url1 = 'https://back.crm.acsolutions.ai/api/v2/bpm/bp/' + key
 response1 = requests.get(url1, params=params1, headers=headers1)
 if response1.status_code == 200:
@@ -39,7 +39,7 @@ else:
     actions1 = []
 
 
-# Выполняем второй запрос
+# Excecuding the 2nd request
 url2 = 'https://back.crm.acsolutions.ai/api/v2/bpm/bp/get_stats/' + key
 response2 = requests.get(url2, params=params1, headers=headers1)
 if response2.status_code == 200:
@@ -50,25 +50,25 @@ else:
     data2 = {}
 
 
-# Создаем словарь для хранения статусов
+# Creating a dictionary for storing statuses
 action_statuses = {}
 
-# Создаем словарь для хранения соответствия id и title
+# Creating a dictionary to store the mapping of ID and title
 id_to_title = {action.get("id"): action.get("title") for action in actions1}
 
-# Проходимся по действиям из первого ответа
+# Iterating through the actions from the first response
 for action1 in actions1:
     action_id = action1.get("id")
 
-    # Ищем соответствующий статус во втором ответе
+    # Searching for the corresponding status in the second response
     action_status = data2.get(str(action_id), {})
 
-    # Получаем нужные статусы
+    # Retrieve the necessary statuses
     count = action_status.get("waiting", 0) + action_status.get("running", 0) + action_status.get("stuck", 0) + action_status.get("ended", 0) + action_status.get("was_transferred", 0)
     uncount = action_status.get("waiting", 0) + action_status.get("running", 0) + action_status.get("stuck", 0) + action_status.get("was_transferred", 0)
-    # Получаем title по id
+    # Get the title by ID
     title = id_to_title.get(action_id)
-    # Сохраняем статусы в словаре
+    # Save statuses in a dictionary
     if title in action_statuses:
         action_statuses[title]['count'] += count
         action_statuses[title]['uncount'] += uncount
@@ -81,7 +81,7 @@ for action1 in actions1:
 
 
 
-# Создаем dictionary для конечных статусов
+# Create a dictionary for final statuses
 default = {'Автоответчик' : 0, 'Сброс' : 0, 'Другая фраза' : 0, 'Недозвон' : 0, 'Заинтересован' : 0, 'Не обработано' : 0,
            'Перезвон' : 0, 'Средне-заинтересованные' : 0, 'Formal Bot 1' : 0, 'Formal Bot 2' : 0, 'Formal Bot 3' : 0,
            'Автоответчик Д' : 0, 'Сброс Д' : 0, 'Другая фраза Д' : 0, 'Недозвон Д' : 0, 'Заинтересован СМС 1 Д' : 0,
@@ -92,7 +92,7 @@ default = {'Автоответчик' : 0, 'Сброс' : 0, 'Другая фр�
            'Formal Bot EN 1' : 0, 'Formal Bot EN 2' : 0, 'Formal Bot EN 3' : 0,
            'Автоответчик EN' : 0, 'Сброс EN' : 0, 'Другая фраза EN' : 0, 'Недозвон EN' : 0, 'Заинтересован СМС EN 1' : 0}
 
-# Фильтруем данные для заполнения dictionary для конечных статусов
+# Filter data to populate the dictionary for final statuses
 for i in default:
     try:
         if i != 'Автоответчик' and i != 'Сброс' and i != 'Другая фраза' and i != 'Недозвон' and i != 'Заинтересован':
@@ -133,10 +133,10 @@ for i in default:
 
 print(default)
 
-# Преобразуем данные в DataFrame
+# Convert data into a DataFrame
 df = pd.DataFrame.from_dict(default, orient='index')
 
-# Сохраняем DataFrame в Excel файл
+# Save the DataFrame to an Excel file
 excel_file_path = "dataBP.xlsx"
 df.to_excel(excel_file_path)
 
