@@ -4,12 +4,12 @@ from googleapiclient.http import MediaFileUpload
 from google.oauth2 import service_account
 
 def get_folder_id(drive_service, folder_url):
-    # Разбираем URL папки, чтобы получить ID
+    # Parse the folder URL to get the ID
     folder_id = folder_url.split('/')[-1]
     return folder_id
 
 def upload_file_to_drive(file_path, folder_url):
-    # Здесь необходимо указать путь к вашему JSON-файлу с учетными данными службы
+    # Specify the path to your JSON credentials file for connecting to Google Sheets
     SERVICE_ACCOUNT_FILE = 'data-acs-60fe914f25ef.json'
     SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
@@ -18,23 +18,23 @@ def upload_file_to_drive(file_path, folder_url):
 
     drive_service = build('drive', 'v3', credentials=credentials)
 
-    # Получаем ID папки из URL
+    # Get the folder ID from the URL
     folder_id = get_folder_id(drive_service, folder_url)
 
     if not folder_id:
         print('Ошибка: Не удалось получить ID папки из URL.')
         return None
 
-    # Создаем метаданные файла для загрузки
+    # Create the file metadata for upload
     file_metadata = {
         'name': os.path.basename(file_path),
-        'parents': [folder_id]  # ID папки, в которую хотите загрузить файл
+        'parents': [folder_id]  # Specify the folder ID where you want to upload the file
     }
 
-    # Создаем объект MediaFileUpload для загрузки файла
+    # Create a MediaFileUpload object for uploading the file
     media = MediaFileUpload(file_path, resumable=True)
 
-    # Загружаем файл на Google Drive
+    # Upload the file to Google Drive
     try:
         file = drive_service.files().create(body=file_metadata,
                                             media_body=media,
@@ -46,7 +46,7 @@ def upload_file_to_drive(file_path, folder_url):
         print('Ошибка загрузки файла в Google Drive:', e)
         return None
 
-# Пример использования функции
+# Example usage of the function
 if __name__ == "__main__":
     excel_file_path = 'dataBP.xlsx'
     folder_url = 'https://drive.google.com/drive/folders/19XBd5UaEz5QCR_NoLWnMpTl2ImQSkXUI'
